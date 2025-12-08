@@ -1,0 +1,139 @@
+# Borg Time Machine Configuration
+# This file configures the automated Borg backup system
+
+# Repository settings
+repository:
+  # Path to Borg repository (local or remote SSH)
+  # Examples:
+  #   - /mnt/backup/borg-timemachine
+  #   - user@host:/path/to/repo
+  #   - ssh://user@host:2222/path/to/repo
+  path: /tmp/borg
+
+  # Encryption mode: repokey-blake2, repokey, keyfile, authenticated, none
+  encryption: repokey-blake2
+
+# Backup jobs - each job defines source -> destination mapping
+jobs:
+  - name: system-config
+    source: /etc
+    destination: etc
+    enabled: true
+
+  - name: user-homes
+    source: /home
+    destination: home
+    enabled: true
+
+  # Example: backup specific service data
+  # - name: web-data
+  #   source: /var/www
+  #   destination: var/www
+  #   enabled: true
+
+  # Example: backup with custom exclusions
+  # - name: srv-data
+  #   source: /srv
+  #   destination: srv
+  #   enabled: true
+  #   exclude:
+  #     - '/srv/cache/*'
+  #     - '/srv/tmp/*'
+
+# Global exclusion patterns (apply to all jobs)
+exclusions:
+  # Cache directories
+  - '/home/*/.cache'
+  - '/home/*/.local/share/Trash'
+  - '**/Cache'
+  - '**/.thumbnails'
+
+  # Build artifacts
+  - '**/node_modules'
+  - '**/target'
+  - '**/__pycache__'
+  - '**/.pytest_cache'
+  - '**/.tox'
+  - '**/venv'
+  - '**/.venv'
+
+  # Temporary files
+  - '*.tmp'
+  - '*.temp'
+  - '*.swp'
+  - '*~'
+  - '.DS_Store'
+  - 'Thumbs.db'
+
+  # Downloads
+  - '/home/*/Downloads'
+
+  # Logs (usually not needed in backups)
+  - '*.log'
+
+# Compression: none, lz4, zstd, zlib, lzma
+# Can specify compression level: zstd,3 or lzma,6
+compression: lz4
+
+# Backup options
+options:
+  # Don't cross filesystem boundaries
+  one_file_system: true
+
+  # Exclude cache directories marked with CACHEDIR.TAG
+  exclude_caches: true
+
+  # Show progress during backup
+  show_progress: true
+
+  # Show statistics after backup
+  show_stats: true
+
+# Retention policy (Time Machine-style)
+# These settings determine how long backups are kept
+retention:
+  # Keep all backups from last 24 hours
+  # Note: borg uses uppercase time units: H=hours, d=days, w=weeks, m=months, y=years
+  within: 24H
+
+  # Keep one backup per hour for the last 24 hours
+  hourly: 24
+
+  # Keep one backup per day for the last 7 days
+  daily: 7
+
+  # Keep one backup per week for the last 4 weeks
+  weekly: 4
+
+  # Keep one backup per month for the last 6 months
+  monthly: 6
+
+  # Keep one backup per year for the last 2 years
+  yearly: 2
+
+# Email notifications for failures
+notifications:
+  enabled: true
+  email: admin@example.com
+
+# Logging configuration
+logging:
+  # Where to write log files
+  log_file: /var/log/borg-timemachine.log
+
+  # Lock file to prevent concurrent backup runs
+  lock_file: /var/run/borg-timemachine.lock
+
+# Maintenance tasks
+maintenance:
+  # Run 'borg check' on this day of week (1=Mon, 7=Sun, 0=disabled)
+  check_day: 7
+
+  # Run 'borg compact' after prune to reclaim space
+  auto_compact: true
+
+# Security settings
+security:
+  # Path to file containing the repository passphrase
+  # This file should be readable only by root (chmod 600)
+  passphrase_file: /root/.borg-passphrase

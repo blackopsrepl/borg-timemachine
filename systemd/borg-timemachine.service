@@ -1,0 +1,29 @@
+[Unit]
+Description=Borg Time Machine Backup
+Documentation=https://borgbackup.readthedocs.io/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/borg-timemachine --config /etc/borg/borg-config.yaml backup
+
+# Run as root to access all files
+User=root
+Group=root
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=borg-timemachine
+
+# Resource limits - run with lower priority to not impact system
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle
+Nice=19
+
+# Timeout - allow up to 4 hours for backup to complete
+TimeoutStartSec=14400
+
+[Install]
+WantedBy=multi-user.target

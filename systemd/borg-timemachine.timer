@@ -1,0 +1,20 @@
+[Unit]
+Description=Borg Time Machine Backup Timer
+Documentation=https://borgbackup.readthedocs.io/
+Requires=borg-timemachine.service
+
+[Timer]
+# Run every hour
+OnCalendar=hourly
+
+# Run on boot if missed (e.g., system was off)
+Persistent=true
+
+# Randomize start time by up to 10 minutes to avoid load spikes
+RandomizedDelaySec=10min
+
+# Ensure timer is reset after service completes
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,27 @@
+# Rust build artifacts
+target/
+Cargo.lock
+
+# Generated example configs
+borg-config-example.yaml
+
+# Backup repository (if testing locally)
+/tmp/borg/
+
+# Editor files
+*.swp
+*~
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+
+# Borg key exports (sensitive!)
+borg-key-*.txt
+borg-key-*.html
+*.paper-key
