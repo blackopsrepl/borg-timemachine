@@ -282,11 +282,20 @@ impl BorgBackup {
             .status()
             .map_err(|e| format!("Failed to run borg create: {}", e))?;
 
-        if !status.success() {
-            return Err("borg create failed".to_string());
+        // Borg exit codes:
+        // 0 = success
+        // 1 = warning (backup completed but some files couldn't be read)
+        // 2+ = error (backup failed)
+        let exit_code = status.code().unwrap_or(2);
+        if exit_code >= 2 {
+            return Err(format!("borg create failed with exit code {}", exit_code));
         }
 
-        self.log("Backup created successfully");
+        if exit_code == 1 {
+            self.log("Backup created with warnings (some files may have been skipped)");
+        } else {
+            self.log("Backup created successfully");
+        }
         Ok(())
     }
 
@@ -309,8 +318,9 @@ impl BorgBackup {
             .status()
             .map_err(|e| format!("Failed to run borg prune: {}", e))?;
 
-        if !status.success() {
-            return Err("borg prune failed".to_string());
+        let exit_code = status.code().unwrap_or(2);
+        if exit_code >= 2 {
+            return Err(format!("borg prune failed with exit code {}", exit_code));
         }
 
         self.log("Prune completed");
@@ -329,8 +339,9 @@ impl BorgBackup {
             .status()
             .map_err(|e| format!("Failed to run borg compact: {}", e))?;
 
-        if !status.success() {
-            return Err("borg compact failed".to_string());
+        let exit_code = status.code().unwrap_or(2);
+        if exit_code >= 2 {
+            return Err(format!("borg compact failed with exit code {}", exit_code));
         }
 
         self.log("Compact completed");
@@ -351,8 +362,12 @@ impl BorgBackup {
             .status()
             .map_err(|e| format!("Failed to run borg check: {}", e))?;
 
-        if !status.success() {
-            return Err("Repository integrity check failed".to_string());
+        let exit_code = status.code().unwrap_or(2);
+        if exit_code >= 2 {
+            return Err(format!(
+                "Repository integrity check failed with exit code {}",
+                exit_code
+            ));
         }
 
         self.log("Integrity check passed");
